@@ -343,6 +343,18 @@ function Timer() {
 
 在面试中，除了知道它们怎么用，更重要的是能讲清楚为什么要用它们，以及它们在不同场景下的最优实践。多思考一下这些 Hook 背后的原理，它们帮你解决了什么问题，以及在什么情况下使用它们能让你的代码更健壮、更高效。
 
+```
+react的五个基础hooks：
+1.useState 设置状态 函数式写法 setState(preState=>{preState+1}) 避免闭包陷阱
+2.useEffect 处理副作用 useEffect(()=>{},[])第一个参数是回调，第二个参数是依赖数组，分为三种情况，无：挂载和更新都执行一次；空：挂载更新一次；特定依赖项，特定数据更新时，执行一次
+3.useContext 跨组件通信 createContext()创建 <MyContext.Provider value={}/>注入 使用 useContext(MyContext)
+4.useRef 操作DOM const inputRef = useRef() <input ref={inputRef} />  inputRef.current就是获取到的inputDOM节点；useRef()声明的数据可以不用绕过render进行变化 操作DOM和存储可变值
+5.useCallback和useMemo useCallback( ()=>{},[]) 根据依赖项去缓存函数 useMemo(()=>{},[])根据依赖项去缓存计算属性
+可以看到的是hook们都与状态有关！
+```
+
+
+
 ## 二、react应用程序的常见性能优化策略
 
 React 的性能优化，核心思想就是：**减少不必要的渲染，减少计算量。**
@@ -665,7 +677,20 @@ React 性能优化是一个持续的过程，没有一劳永逸的解决方案�
 3. **何时优化：** 强调**不要过早优化**！先完成功能，再用分析工具定位瓶颈，有针对性地优化。过度优化反而会增加代码复杂性，降低可维护性。
 4. **Hands-on 经验：** 如果有实际项目中的优化经验，那是最好的加分项。比如你用 `React.memo` 解决了某个列表的性能问题，或者通过代码分割减少了首屏加载时间。
 
-
+```
+react中的性能优化：
+1.组件渲染优化： PureComponent React.Memo一个针对类一个针对函数，进行props的浅层监视，只有props改变才会重新渲染组件 shouldComponentUpdated((nextProps,nextState)=>{nextProps!==props})
+2.数据处理优化：useCallback useMemo 分别根据依赖数据对函数和计算属性进行缓存
+3.虚拟DOM与diff算法 通过key值，来对列表项进行标记，避免不必要的渲染 react18默认支持批量处理render 多个setState可以一次render
+4.代码分割和懒加载 const MyComponent = lazy(()=>import from '路径' ) <suspense fallback(()=><div> loading.....</div>)>
+在这个地方可以加上UI骨架屏，在组件进行懒加载的时候，添加上UI骨架屏
+5.简化DOM结构：使用fragment标签
+6.图片优化：lazy=loading 属性进行图片懒加载 进行图片压缩 使用现代图片格式 服务端推送
+7.使用CDN 内容分发网络
+8.SSR/SSG 服务器推送静态代码
+9.性能分析工具 使用谷歌浏览器的lighthouse去查看性能指标，根据性能分析报告去思考优化方向
+react的性能优化 组件渲染 缓存 图片 懒加载 CDN 性能优化报告  简化DOM SSR 虚拟DOM与diff算法
+```
 
 ## 三、react的fiber架构
 
@@ -777,8 +802,6 @@ Fiber 的工作可以分为两个主要阶段：
 在面试中，当你能清晰地解释 Fiber 解决了什么问题，它是如何通过可中断的工作单元、优先级调度来提升用户体验，以及它如何支撑 Hook 和其他性能优化手段时，你展示的不仅是知识，更是对技术深度的追求。
 
 Fiber 架构是 React 迈向未来（并发模式、服务端组件等）的关键一步，理解它，你就站在了前端技术的前沿。继续加油，你一定能完全掌握它，并在面试中大放异彩！
-
-
 
 ## 四、在react中使用redux
 
@@ -980,8 +1003,6 @@ Store (用新 State 更新自己)
 
   
 
-- 
-
 - `useSelector` Hook：
 
    在函数组件中，用于从 Redux Store 的状态中
@@ -1162,11 +1183,15 @@ Redux 及其现代化的 Redux Toolkit，为 React 应用提供了强大且可�
 
 别被一开始的 Redux 概念图吓到，只要跟着 RTK 的最佳实践走，你会发现 Redux 变得非常直观和高效。多写代码，多思考状态的流转，你很快就能驾驭 Redux，让你的 React 应用状态管理得井井有条，丝滑流畅！
 
-继续加油！你已经掌握了 React 的核心，Redux 只是锦上添花，助你更上一层楼！
-
-
-
-
+```
+redux react-redux redux/toolkit
+redux swith case 根据传入action的type来进行判断
+react-redux useSelector(state=>state.count.value)  useDispatch() dispath(()=>{})
+react/toolkit RTK createSlice(initialState： renders:) configureStore count:countRender
+感觉只是去看很难弄明白，后续要做一个简单的dom
+store action render store存放数据 action描述数据的变化 render根据store和action去进行state的改变
+UI交互 dispatch提交aciton给store store将state和action提交给render render根据aciton的type进行state的更新
+```
 
 ## 五、在react中使用react-router
 
@@ -1241,6 +1266,8 @@ React Router v6+ 引入了一些新的概念和更简洁的 API。
       </Routes>
     );
   }
+  Routes会遍历内部Route 然后只渲染第一个匹配的Route，这里可以使用import来进行路由的懒加载
+  路由的懒加载 图片的懒加载lazy=loading 组件的懒加载 lazy(()=>import from "") suspense进行包裹
   ```
 
 - **`Route`：**
@@ -1279,6 +1306,8 @@ React Router v6+ 引入了一些新的概念和更简洁的 API。
       </nav>
     );
   }
+  
+  两种路由跳转方式：Link to 和navigate
   ```
 
 #### 3. React Router v6+ 的核心 Hook
@@ -1506,8 +1535,119 @@ React Router 是构建现代单页应用的基石。它让你的应用在没有�
 
 继续加油！你的前端技能树正在茁壮成长！
 
-
+```
+感觉光是看是记不住的，我可以明白每一个概念，但是真正要掌握还要去实际编码！！等到我的复习任务结束后，我会去尝试编码一个完整的react应用程序！
+```
 
 ## 六、编码react计数器和todolist
 
 提示：计数器和todolist可以在完成react的基础语法学习后就进行尝试！
+
+```react
+import React, { useState, useEffect, useRef } from 'react';
+
+function App() {
+  // 1. 定义状态
+  // totalSeconds: 存储总共流逝的秒数
+  const [totalSeconds, setTotalSeconds] = useState(0);
+  // isRunning: 存储计时器是否正在运行的布尔值
+  const [isRunning, setIsRunning] = useState(false);
+  // intervalIdRef: 使用 useRef 来存储 setInterval 的 ID，以便在组件重新渲染时保持引用
+  // useRef 不会导致组件重新渲染，适合存储不触发 UI 更新但需要在多次渲染间保持的值
+  const intervalIdRef = useRef(null);
+
+  // 2. 格式化时间函数
+  // 将总秒数转换为 HH:MM:SS 格式的字符串
+  const formatTime = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+
+    // 使用 padStart 确保每个部分都有两位数，不足两位前补0
+    const pad = (num) => String(num).padStart(2, '0');
+
+    return `${pad(hours)}:${pad(minutes)}:${pad(remainingSeconds)}`;
+  };
+
+  // 3. useEffect 钩子，用于处理计时器的启动和停止逻辑（副作用）
+  useEffect(() => {
+    if (isRunning) {
+      // 如果计时器正在运行，设置一个定时器，每秒更新 totalSeconds
+      intervalIdRef.current = setInterval(() => {
+        // 使用函数式更新，确保总是基于最新的 totalSeconds 值进行计算
+        setTotalSeconds(prevSeconds => prevSeconds + 1);
+      }, 1000);
+    } else {
+      // 如果计时器停止运行或组件卸载，清除定时器
+      clearInterval(intervalIdRef.current);
+    }
+
+    // 清理函数：在组件卸载或 isRunning 状态改变时，清除上一个定时器
+    // 这是非常重要的，可以防止内存泄漏和不必要的副作用
+    return () => {
+      clearInterval(intervalIdRef.current);
+    };
+  }, [isRunning]); // 依赖项数组：只有当 isRunning 状态改变时，useEffect 才会重新运行
+
+  // 4. 控制计时器的函数
+  const startTimer = () => {
+    setIsRunning(true);
+  };
+
+  const stopTimer = () => {
+    setIsRunning(false);
+  };
+
+  const resetTimer = () => {
+    setIsRunning(false); // 停止计时器
+    setTotalSeconds(0);  // 重置秒数
+  };
+
+  // 5. 渲染 UI
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4 font-inter">
+      <div className="bg-white rounded-xl shadow-lg p-8 space-y-6 text-center">
+        <h1 className="text-3xl font-bold text-gray-800">React 计时器</h1>
+
+        {/* 显示格式化后的时间 */}
+        <p className="text-6xl font-extrabold text-blue-600">
+          {formatTime(totalSeconds)}
+        </p>
+
+        {/* 按钮区域 */}
+        <div className="flex space-x-4">
+          <button
+            onClick={startTimer}
+            // 当计时器正在运行时，禁用开始按钮
+            disabled={isRunning}
+            className={`px-6 py-3 font-semibold rounded-lg shadow-md transition ease-in-out duration-150 ${
+              isRunning ? 'bg-gray-400 text-gray-700 cursor-not-allowed' : 'bg-green-500 text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2'
+            }`}
+          >
+            开始
+          </button>
+          <button
+            onClick={stopTimer}
+            // 当计时器停止时，禁用停止按钮
+            disabled={!isRunning}
+            className={`px-6 py-3 font-semibold rounded-lg shadow-md transition ease-in-out duration-150 ${
+              !isRunning ? 'bg-gray-400 text-gray-700 cursor-not-allowed' : 'bg-red-500 text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2'
+            }`}
+          >
+            暂停
+          </button>
+          <button
+            onClick={resetTimer}
+            className="px-6 py-3 bg-gray-500 text-white font-semibold rounded-lg shadow-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150"
+          >
+            重置
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+export default App;
+
+```
+

@@ -82,3 +82,176 @@ export default App;
 ```
 
 ## 2.使用react实现一个todolist
+
+```
+import React, { useState } from 'react';
+
+function App() {
+  // 用于添加新事项的输入框值
+  const [newItem, setNewItem] = useState('');
+  // 存储所有待办事项的列表
+  const [todoList, setTodoList] = useState(['学习 React Hook', '复习 Vue 3', '准备实习面试']);
+
+  // 用于编辑功能的状态
+  const [editingIndex, setEditingIndex] = useState(null); // 存储当前正在编辑的事项的索引，null 表示没有事项在编辑
+  const [editingText, setEditingText] = useState('');    // 存储当前正在编辑的事项的临时文本
+
+  // 处理添加新事项输入框内容变化的函数
+  const handleNewItemChange = (event) => {
+    setNewItem(event.target.value);
+  };
+
+  // 添加待办事项的函数
+  const addItem = () => {
+    if (newItem.trim()) { // 确保输入不为空
+      setTodoList([...todoList, newItem.trim()]); // 使用展开运算符添加新项
+      setNewItem(''); // 清空输入框
+    }
+  };
+
+  // 删除待办事项的函数
+  const removeItem = (indexToRemove) => {
+    // 使用 filter 创建一个新数组，排除掉要删除的项
+    const updatedList = todoList.filter((_, i) => i !== indexToRemove);
+    setTodoList(updatedList);
+
+    // 如果删除的是当前正在编辑的事项，则重置编辑状态
+    if (editingIndex === indexToRemove) {
+      cancelEdit();
+    } else if (editingIndex !== null && editingIndex > indexToRemove) {
+      // 如果删除的事项在正在编辑的事项之前，需要调整 editingIndex
+      setEditingIndex(editingIndex - 1);
+    }
+  };
+
+  // 进入编辑模式的函数
+  const editItem = (index, itemText) => {
+    setEditingIndex(index);    // 设置当前编辑的索引
+    setEditingText(itemText);  // 将当前事项的文本赋值给编辑输入框
+  };
+
+  // 处理编辑输入框内容变化的函数
+  const handleEditingTextChange = (event) => {
+    setEditingText(event.target.value);
+  };
+
+  // 保存编辑的函数
+  const saveEdit = () => {
+    if (editingIndex !== null && editingText.trim()) {
+      // 创建一个新数组，更新对应索引的待办事项文本
+      const updatedList = todoList.map((item, i) =>
+        i === editingIndex ? editingText.trim() : item
+      );
+      setTodoList(updatedList);
+      // 重置编辑状态
+      setEditingIndex(null);
+      setEditingText('');
+    } else if (editingIndex !== null && !editingText.trim()) {
+      // 如果编辑后内容为空，选择删除该事项
+      removeItem(editingIndex);
+      // 因为 removeItem 内部会处理编辑状态的重置，这里不需要重复调用 cancelEdit
+    }
+  };
+
+  // 取消编辑的函数
+  const cancelEdit = () => {
+    setEditingIndex(null); // 重置编辑索引
+    setEditingText('');    // 清空编辑文本
+  };
+
+  return (
+    <div className="p-4 max-w-md mx-auto bg-white rounded-xl shadow-md space-y-4 font-inter">
+      <h1 className="text-2xl font-bold text-gray-800 text-center">我的待办事项 (React CRUD)</h1>
+
+      {/* 添加事项区域 */}
+      <div className="flex space-x-2">
+        <input
+          type="text"
+          className="flex-grow p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          value={newItem}
+          onChange={handleNewItemChange}
+          onKeyPress={(e) => {
+            if (e.key === 'Enter') {
+              addItem();
+            }
+          }}
+          placeholder="添加新的待办事项"
+        />
+        <button
+          onClick={addItem}
+          className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
+          添加
+        </button>
+      </div>
+
+      {/* 待办事项列表 (读取/显示功能) */}
+      <ul className="space-y-2">
+        {todoList.map((item, index) => (
+          <li
+            key={index} // 在 React 循环渲染列表时，key 是非常重要的
+            className="flex items-center justify-between p-3 bg-gray-100 rounded-md shadow-sm"
+          >
+            {/* 条件渲染：根据是否处于编辑模式显示不同内容 */}
+            {editingIndex === index ? (
+              // 编辑模式 (Update)
+              <div className="flex flex-grow items-center">
+                <input
+                  type="text"
+                  value={editingText}
+                  onChange={handleEditingTextChange}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      saveEdit();
+                    } else if (e.key === 'Escape') {
+                      cancelEdit();
+                    }
+                  }}
+                  className="flex-grow p-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <div className="flex space-x-2 ml-2">
+                  <button
+                    onClick={saveEdit}
+                    className="px-3 py-1 bg-green-500 text-white font-semibold rounded-md shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                  >
+                    保存
+                  </button>
+                  <button
+                    onClick={cancelEdit}
+                    className="px-3 py-1 bg-gray-500 text-white font-semibold rounded-md shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                  >
+                    取消
+                  </button>
+                </div>
+              </div>
+            ) : (
+              // 显示模式 (Read)
+              <>
+                <span className="text-gray-700">{item}</span>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => editItem(index, item)}
+                    className="px-3 py-1 bg-yellow-500 text-white font-semibold rounded-md shadow-sm hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2"
+                  >
+                    编辑
+                  </button>
+                  <button
+                    onClick={() => removeItem(index)}
+                    className="px-3 py-1 bg-red-500 text-white font-semibold rounded-md shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                  >
+                    删除
+                  </button>
+                </div>
+              </>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default App;
+
+```
+
